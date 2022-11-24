@@ -1,31 +1,35 @@
 import socket
 
-localIP = "127.0.0.1"
-localPort = 20001
-bufferSize = 1024
+def test_server():
 
-msgFromServer = "Hello UDP Client"
-bytesToSend = str.encode(msgFromServer)
+    localIP = "127.0.0.1"
+    localPort = 20001
+    bufferSize = 1024
 
-# Create a datagram socket
-UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+    msgFromServer = "Hello UDP Client"
+    bytesToSend = str.encode(msgFromServer)
 
-# Bind to address and IP
-UDPServerSocket.bind((localIP, localPort))
+    # Create a datagram socket
+    UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
-print("UDP server up and listening")
+    # Bind to address and IP
+    UDPServerSocket.bind((localIP, localPort))
 
-# Listen for incoming datagrams
-while (True):
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-    message = bytesAddressPair[0]
-    address = bytesAddressPair[1]
+    print("UDP server up and listening")
 
-    client_msg = "Message from Clinet:{}".format(message)
-    client_ip = "Client IP Address:{}".format(address)
+    # Listen for incoming datagrams
+    while (True):
+        bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
+        message = bytesAddressPair[0]
+        address = bytesAddressPair[1]
 
-    print(client_msg)
-    print(client_ip)
+        client_msg = "Message from Clinet:{}".format(message)
+        client_ip = "Client IP Address:{}".format(address)
 
-    # Sending a reply to client
-    UDPServerSocket.sendto(bytesToSend, address)
+        print(client_msg)
+        print(client_ip)
+
+        # Sending a reply to client
+        UDPServerSocket.sendto(bytesToSend, address)
+
+test_server()
