@@ -21,12 +21,10 @@ print("UDP server up and listening")
 
 # Listen for incoming datagrams
 while (True):
-    print('hi')
     bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
     message = bytesAddressPair[0]
     address = bytesAddressPair[1]
 
-    print('reach')
     client_msg = "Message from Client:{}".format(message)
     client_ip = "Client IP Address:{}".format(address)
 
