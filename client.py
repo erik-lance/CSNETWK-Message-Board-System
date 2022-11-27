@@ -1,9 +1,9 @@
 #import model as server
 import model as model
-import view as view
+# import view as view
 import socket
 
-# view.open_window()
+# view.open_main_window()
 
 def write_message():
     print('Write a message: ')
