@@ -1,5 +1,5 @@
 import tkinter as tk
-import client
+import client as clt
 
 BG_GRAY = "#ABB2B9"
 BG_COLOR = "#17202A"
@@ -14,57 +14,15 @@ def open_main_window():
     window = tk.Tk()
     window.title("Message Board System")
     # window.geometry("500x500")
+    app = clt.Client()
 
     def send():
-        send = "You -> " + e.get()
+        send =  app.send_server(e.get())
+
         text_board.insert(tk.END, "\n" + send)
     
-        user = e.get().lower()
-    
-        if (user == "hello"):
-            text_board.insert(tk.END, "\n" + "Bot -> Hi there, how can I help?")
-    
-        elif (user == "hi" or user == "hii" or user == "hiiii"):
-            text_board.insert(tk.END, "\n" + "Bot -> Hi there, what can I do for you?")
-    
-        elif (user == "how are you"):
-            text_board.insert(tk.END, "\n" + "Bot -> fine! and you")
-    
-        elif (user == "fine" or user == "i am good" or user == "i am doing good"):
-            text_board.insert(tk.END, "\n" + "Bot -> Great! how can I help you.")
-    
-        elif (user == "thanks" or user == "thank you" or user == "now its my time"):
-            text_board.insert(tk.END, "\n" + "Bot -> My pleasure !")
-    
-        elif (user == "what do you sell" or user == "what kinds of items are there" or user == "have you something"):
-            text_board.insert(tk.END, "\n" + "Bot -> We have coffee and tea")
-    
-        elif (user == "tell me a joke" or user == "tell me something funny" or user == "crack a funny line"):
-            text_board.insert(
-                tk.END, "\n" + "Bot -> What did the buffalo say when his son left for college? Bison.! ")
-    
-        elif (user == "goodbye" or user == "see you later" or user == "see yaa"):
-            text_board.insert(tk.END, "\n" + "Bot -> Have a nice day!")
-    
-        else:
-            text_board.insert(tk.END, "\n" + "Bot -> Sorry! I didn't understand that")
     
         e.delete(0, tk.END)
-    # label = tk.Label(text="Hello, Tkinter", background="#34A2FE")
-    # label.pack()
-
-    # entry = tk.Entry(fg="yellow", bg="blue", width=50)
-    # entry.pack()
-
-    # button = tk.Button(
-    #     text="Click me!",
-    #     width=25,
-    #     height=5,
-    #     bg="blue",
-    #     fg="yellow",
-    # )
-    # button.pack()
-
 
     label1= tk.Label(window, bg=BG_COLOR, fg=TEXT_COLOR, text="Welcome", font=FONT_BOLD, pady=10, width=20, height=1).grid(
     row=0)

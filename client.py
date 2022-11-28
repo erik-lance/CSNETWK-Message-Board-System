@@ -6,10 +6,6 @@ BUFFER_SIZE = 1024
 COMMANDS = ['join', 'leave', 'register', 'all', 'message', '?']
 
 class Client:
-    bufferSize = model.get_buffer_size()
-    udp_host = model.get_udp_host()
-    udp_port = model.get_udp_port()
-
     def __init__(self) -> None:
         # Create a UDP socket at client side
         self.UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -37,12 +33,14 @@ class Client:
 
         # Splits the string based on parameters
         msg = message[1:].split(" ")
-        msg_dict = {'command':'None', 'handle':'None', 'message':'None'}
+        msg_dict = {'command':'None'}
 
         if msg[0] == COMMANDS[0] and len(msg) == 3:
             # /join <server_ip_add> <port>
             msg_dict['command'] = 'join'
-
+            self.udp_host = msg[1]
+            self.udp_port = int(msg[2])
+            # You already connect by using the IP address and Port so no need for parameters
         
         elif msg[0] == COMMANDS[1] and len(msg) == 1:
             # /leave
@@ -74,27 +72,24 @@ class Client:
 
 
         msg_json = json.dumps(msg_dict)
-        parsed = "test"
 
-        return (parsed, err)
+        return (msg_json, err)
 
     def send_server(self, message):
         msg, err = self.parse_message(message)
 
         if err == None:
             serverAddressPort = (self.udp_host, self.udp_port)
+            bytesToSend = str.encode(msg)
+
+            print("UDP Target IP:", self.udp_host)
+            print("UDP Target port:", self.udp_port)
+
+            self.UDPClientSocket.sendto(bytesToSend, serverAddressPort)
             
-
-
-            self.UDPClientSocket.sendto(bytes, serverAddressPort)
             return self.UDPClientSocket.recvfrom(BUFFER_SIZE)
         else:
             return err
-
-
-    def write_message():
-        print('Write a message: ', end='')
-        return str.encode(input())
 
     def get_error(self, code):
         """Gets the error message based on code
@@ -107,14 +102,15 @@ class Client:
         """
 
         error = "Error: "
+
         if code == 4:
             return error+"Command not found."
         elif code == 5:
             return error+"Command parameters do not match or is not allowed."
 
 
-    def get_host(self) -> str: self.return udp_host
-    def get_port(self) -> str: self.return udp_port
+    def get_host(self) -> str: return self.udp_host
+    def get_port(self) -> str: return self.udp_port
 
     def set_host(self, host): self.udp_host = host
     def set_port(self, port): self.udp_port = port
@@ -123,12 +119,6 @@ class Client:
 
     # msgFromClient       = "Hello UDP Server"
     # bytesToSend         = str.encode(msgFromClient)
-
-    bytesToSend = write_message()
-
-    print("UDP Target IP:", udp_host)
-    print("UDP Target port:", udp_port)
-
 
     # Send to server using created UDP socket
     
