@@ -37,15 +37,43 @@ class Client:
 
         # Splits the string based on parameters
         msg = message[1:].split(" ")
+        msg_dict = {'command':'None', 'handle':'None', 'message':'None'}
 
         if msg[0] == COMMANDS[0] and len(msg) == 3:
             # /join <server_ip_add> <port>
-            self.connect_server()
+            msg_dict['command'] = 'join'
+
+        
+        elif msg[0] == COMMANDS[1] and len(msg) == 1:
+            # /leave
+            msg_dict['command'] = 'leave'
+
+        elif msg[0] == COMMANDS[2] and len(msg) == 2:
+            # /register <handle>
+            msg_dict['command'] = 'register'
+            msg_dict['handle'] = msg[1]
+
+        elif msg[0] ==  COMMANDS[3] and len(msg) == 2:
+            # /all <messsage>
+            msg_dict['command'] = 'all'
+            msg_dict['message'] = msg[1]
+        
+        elif msg[0] == COMMANDS[4] and len(msg) == 3:
+            # /msg <handle> <message>
+            msg_dict['command'] = 'msg'
+            msg_dict['handle'] = msg[1]
+            msg_dict['message'] = msg[2]
+        
+        elif msg[0] == COMMANDS[5] and len(msg) == 1:
+            # /?
+            pass
         elif msg[0] not in COMMANDS:
             err = self.get_error(4)
         else:
             err = self.get_error(5)
 
+
+        msg_json = json.dumps(msg_dict)
         parsed = "test"
 
         return (parsed, err)
@@ -55,6 +83,8 @@ class Client:
 
         if err == None:
             serverAddressPort = (self.udp_host, self.udp_port)
+            
+
 
             self.UDPClientSocket.sendto(bytes, serverAddressPort)
             return self.UDPClientSocket.recvfrom(BUFFER_SIZE)
