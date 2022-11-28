@@ -1,4 +1,5 @@
 import tkinter as tk
+import client
 
 BG_GRAY = "#ABB2B9"
 BG_COLOR = "#17202A"
