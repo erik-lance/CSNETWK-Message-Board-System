@@ -80,14 +80,18 @@ class Client:
 
         if err == None:
             serverAddressPort = (self.udp_host, self.udp_port)
-            bytesToSend = str.encode(msg)
+            bytesToSend = str.encode(msg, 'UTF-8')
 
             print("UDP Target IP:", self.udp_host)
             print("UDP Target port:", self.udp_port)
 
             self.UDPClientSocket.sendto(bytesToSend, serverAddressPort)
             
-            return self.UDPClientSocket.recvfrom(BUFFER_SIZE)
+            bytesAddressPair = self.UDPClientSocket.recvfrom(BUFFER_SIZE)
+            message = bytesAddressPair[0]
+            address = bytesAddressPair[1]
+
+            return message.decode('UTF-8').strip()
         else:
             return err
 

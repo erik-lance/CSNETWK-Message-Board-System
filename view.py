@@ -17,7 +17,9 @@ def open_main_window():
     app = clt.Client()
 
     def send():
-        send =  app.send_server(e.get())
+        send =  str(app.send_server(e.get()))
+
+        print(send)
 
         text_board.insert(tk.END, "\n" + send)
     
