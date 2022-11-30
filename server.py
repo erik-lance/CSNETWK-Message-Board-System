@@ -66,6 +66,8 @@ UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 UDPServerSocket.bind((udp_host, udp_port))
 
 print("UDP server up and listening")
+print(f"HOST: ${udp_host}")
+print(f"PORT: ${udp_port}")
 
 # Listen for incoming datagrams
 while (True):
