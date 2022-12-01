@@ -1,6 +1,8 @@
 import json
 import model as model
 import socket
+import threading
+import random
 
 BUFFER_SIZE = 1024
 COMMANDS = ['join', 'leave', 'register', 'all', 'message', '?']
@@ -9,15 +11,11 @@ class Client:
     def __init__(self) -> None:
         # Create a UDP socket at client side
         self.UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        
-
 
     def connect_server(self, host, port):
         self.udp_host = host
         self.udp_port = port
-
-
-        msgFromServer = self.UDPClientSocket.recvfrom(BUFFER_SIZE)
+        
 
     def parse_message(self, message):
         """Parses the message to JSON for reading for the server
@@ -85,11 +83,17 @@ class Client:
             print("UDP Target IP:", self.udp_host)
             print("UDP Target port:", self.udp_port)
 
-            self.UDPClientSocket.sendto(bytesToSend, serverAddressPort)
             
-            bytesAddressPair = self.UDPClientSocket.recvfrom(BUFFER_SIZE)
-            message = bytesAddressPair[0]
-            address = bytesAddressPair[1]
+            self.UDPClientSocket.settimeout(5)
+            try:
+                self.UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+                bytesAddressPair = self.UDPClientSocket.recvfrom(BUFFER_SIZE)
+                message = bytesAddressPair[0]
+                address = bytesAddressPair[1]
+            except Exception as e:
+                print("Timeout raised and caught.")
+                return "Timeout."
+                
 
             return message.decode('UTF-8').strip()
         else:
@@ -114,7 +118,7 @@ class Client:
 
 
     def get_host(self) -> str: return self.udp_host
-    def get_port(self) -> str: return self.udp_port
+    def get_port(self) -> int: return self.udp_port
 
     def set_host(self, host): self.udp_host = host
     def set_port(self, port): self.udp_port = port
