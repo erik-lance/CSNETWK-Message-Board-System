@@ -16,6 +16,7 @@ HELP = '''
     /msg <handle> <message> \n
     /? 
 '''
+
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_host = None
 udp_port = None
@@ -33,6 +34,10 @@ def parse_message(self, message):
         err: Output message to be posted into GUI if there is.
     """
     err = None
+    
+    global udp_host
+    global udp_port
+    global curr_cmd
 
     # Splits the string based on parameters
     msg = message[1:].split(" ")
@@ -81,6 +86,10 @@ def parse_message(self, message):
 
 def send_server(self, message):
     msg, err = parse_message(message)
+
+    global udp_host
+    global udp_port
+    global curr_cmd
 
     if err == None:
         serverAddressPort = (udp_host, udp_port)
@@ -141,14 +150,14 @@ def set_host(self, host): udp_host = host
 def set_port(self, port): udp_port = port
 
 
+def receiver():
+    while True:
+        try:
+            message, _ = UDPClientSocket.recvfrom(BUFFER_SIZE)
+            print(message.decode('UTF-8'))
+        except:
+            pass
 
-# msgFromClient       = "Hello UDP Server"
-# bytesToSend         = str.encode(msgFromClient)
-
-# Send to server using created UDP socket
-
-
-# msgFromServer = UDPClientSocket.recvfrom(bufferSize)
-# msg = "Message from Server {}".format(msgFromServer[0])
-
-#print(msg)
+# Separate thread for receiving from server
+t1 = threading.Thread(target=receiver)
+t1.start()
