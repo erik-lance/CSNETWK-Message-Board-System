@@ -4,6 +4,11 @@ import threading
 import queue
 import model as model
 
+WELCOME_MSG = "Connection to the Message Board Server is successful!"
+LEAVE_MSG = "Connection closed. Thank you!"
+
+
+ERROR_REG = "Error: Registration failed. Handle or alias already exists."
 
 msg_chat = queue.Queue()
 private_msg = queue.Queue()
@@ -60,18 +65,29 @@ def read_command(cmd, addr):
 
     return msg;
 
-# Might scrap this
-def message_router(cmd):
-    cmd_dict = json.loads(cmd)
+def parse_system_cmd():
+    while True:
+        try:
+            while not system_msg.empty():
+                message, address = system_msg.get()
+                print("SYS: "+message.decode('UTF-8'))
 
-    route = cmd_dict['command']
+                msg_dict = json.loads(message)
 
-    if   route == 'join': return 0
-    elif route == 'leave': return 0
-    elif route == 'register': return 0
-    elif route == 'all': return 1
-    elif route == 'msg': return 2
-    else: return -1
+                
+                if msg_dict['command'] == 'join':
+                    bytesToSend = str.encode(WELCOME_MSG, 'UTF-8')
+                    UDPServerSocket.sendto(bytesToSend, address)
+                    clients.append(address)
+                elif msg_dict['command'] == 'leave':
+                    bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
+                    UDPServerSocket.sendto(bytesToSend, address)
+                    clients.remove(address)
+                #elif msg_dict['command'] == 'register':
+
+        except:
+            pass
+
 
 # Server information
 bufferSize = model.get_buffer_size()
@@ -97,15 +113,9 @@ def receiver():
             print(client_msg)
             print(client_ip)
 
-            msg_chat.put((message,address))
+            system_msg.put((message,address))
         except:
             pass
-
-def messager(sender, receiver, message):
-
-
-
-    pass
 
 # def broadcast():
 #     while True:
@@ -130,10 +140,11 @@ def messager(sender, receiver, message):
 #                     clients.remove(client)
 
 t1 = threading.Thread(target=receiver)
+t2 = threading.Thread(target=parse_system_cmd)
 # t2 = threading.Thread(target=broadcast)
 
 t1.start()
-# t2.start()
+t2.start()
 
 
 # # Listen for incoming datagrams
