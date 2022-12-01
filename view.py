@@ -1,5 +1,5 @@
 import tkinter as tk
-import client as clt
+import client as client_app
 
 BG_GRAY = "#ABB2B9"
 BG_COLOR = "#17202A"
@@ -14,7 +14,7 @@ def open_main_window():
     window = tk.Tk()
     window.title("Message Board System")
     # window.geometry("500x500")
-    app = clt.Client()
+    app = client_app
 
     def send():
         send =  str(app.send_server(e.get()))
