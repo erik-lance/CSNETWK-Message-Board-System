@@ -4,19 +4,23 @@ import threading
 import queue
 import model as model
 
+
 msg_chat = queue.Queue()
-
-handles = []
-
+private_msg = queue.Queue()
+error_msg = queue.Queue()
+broadcast_msg = queue.Queue()
+system_msg = queue.Queue()
 # Contains tuples of  IP address, user, and 
 users = []
 
 clients = []
+handles = []
+
 
 # Commands:
 # join, leave, register, all, msg, error
 
-def add_user(addr, handle=None):
+def add_user(address, handle=None):
     msg = ""
 
     if handle != None:
@@ -28,19 +32,16 @@ def add_user(addr, handle=None):
         else:
             msg = "Error: Registration failed. Handle or alias already exists."
     else:
-        users.append((addr, handle))
+        users.append((address, handle))
     
     return msg
-
-def message_user(handle, message):
-    pass
 
 def read_command(cmd, addr):
     """ Parses the JSON input and executes command
 
     Args:
         cmd  (JSON):         Command to parse
-        addr (_RetAddress): A tuple containing the user's IP and port.
+        addr (_RetAddress):  A tuple containing the user's IP and port.
 
     Returns:
         str: Server reply
@@ -59,6 +60,19 @@ def read_command(cmd, addr):
 
     return msg;
 
+# Might scrap this
+def message_router(cmd):
+    cmd_dict = json.loads(cmd)
+
+    route = cmd_dict['command']
+
+    if   route == 'join': return 0
+    elif route == 'leave': return 0
+    elif route == 'register': return 0
+    elif route == 'all': return 1
+    elif route == 'msg': return 2
+    else: return -1
+
 # Server information
 bufferSize = model.get_buffer_size()
 udp_host = model.get_udp_host()
@@ -71,10 +85,6 @@ UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 UDPServerSocket.bind((udp_host, udp_port))
 
 print(f"UDP server up and listening on {udp_host}:{udp_port}")
-
-socket_list = [UDPServerSocket]
-clients = {}
-
 
 def receiver():
     while True:
@@ -91,36 +101,47 @@ def receiver():
         except:
             pass
 
-def broadcast():
-    while True:
-        while not msg_chat.empty():
-            message,addr = msg_chat.get()
-            print(message.decode('utf-8'))
-            if addr not in clients:
-                clients.append(addr)
-            for client in clients:
-                try:
-                    if message.decode('utf-8').startswith("HANDLE"):
-                        name = message.decode('utf-8')[message.decode('utf-8').index(":")+1:]
-                        UDPServerSocket.sendto(f"{name} joined!", client)
-                    else:
-                        UDPServerSocket.sendto(message)
-                except:
-                    clients.remove(client)
+def messager(sender, receiver, message):
+
+
+
+    pass
+
+# def broadcast():
+#     while True:
+#         while not broadcast_msg.empty():
+#             message, address = broadcast_msg.get()
+#             print("BROADCAST: "+message.decode('utf-8'))
+
+#             # Add new client address
+#             if address not in clients:
+#                 clients.append(address)
+
+#             # Broadcast message to all clients
+#             for client in clients:
+#                 try:
+
+#                     if message.decode('utf-8').startswith("/"):
+#                         name = message.decode('utf-8')[message.decode('utf-8').index(":")+1:]
+#                         UDPServerSocket.sendto(read_command(message,), client)
+#                     else:
+#                         UDPServerSocket.sendto(message, client)
+#                 except:
+#                     clients.remove(client)
 
 t1 = threading.Thread(target=receiver)
-t2 = threading.Thread(target=broadcast)
+# t2 = threading.Thread(target=broadcast)
 
 t1.start()
-t2.start()
+# t2.start()
 
 
-# Listen for incoming datagrams
-while (True):
-    pass
-    # msgFromServer = read_command(message, address)
-    # bytesToSend = str.encode(msgFromServer, 'UTF-8')
+# # Listen for incoming datagrams
+# while (True):
+#     pass
+#     # msgFromServer = read_command(message, address)
+#     # bytesToSend = str.encode(msgFromServer, 'UTF-8')
 
-    #print("Message from server: "+msgFromServer)
-    # Sending a reply to client
-    # UDPServerSocket.sendto(bytesToSend, address)
+#     #print("Message from server: "+msgFromServer)
+#     # Sending a reply to client
+#     # UDPServerSocket.sendto(bytesToSend, address)
