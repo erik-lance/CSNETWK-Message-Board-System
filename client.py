@@ -22,8 +22,10 @@ udp_host = None
 udp_port = None
 curr_cmd = None
 
+gui = None
 
-def parse_message(self, message):
+
+def parse_message(message):
     """Parses the message to JSON for reading for the server
 
     Args:
@@ -84,7 +86,19 @@ def parse_message(self, message):
 
     return (msg_json, err)
 
-def send_server(self, message):
+def handle_adder(message):
+    if message['command'] == COMMANDS[3]:
+        # /all
+        if message['handle'] != None:
+            return "{handle}: {msg}".format(message['handle'], message['message'])
+        else:
+            return message['message']
+    
+    elif message['command'] == COMMANDS[4]:
+        # /msg
+        return "[From {handle}]: {msg}".format(message['handle'], message['message'])
+
+def send_server(message):
     msg, err = parse_message(message)
 
     global udp_host
@@ -102,17 +116,20 @@ def send_server(self, message):
         UDPClientSocket.settimeout(5)
         try:
             UDPClientSocket.sendto(bytesToSend, serverAddressPort)
-            bytesAddressPair = UDPClientSocket.recvfrom(BUFFER_SIZE)
-            message = bytesAddressPair[0]
-            address = bytesAddressPair[1]
 
-            # Leave after send/rcv
-            if curr_cmd == COMMANDS[1]:
-                udp_host = None
-                udp_port = None
+            
+            if curr_cmd == COMMANDS[4]:
+                # /msg
+                msg_dict = json.dumps(msg)
+                gui.post("[To {handle}]: {msg}".format(msg_dict['handle'], msg_dict['message']))
+        
+
+
+            UDPClientSocket.close()
 
         except Exception as e:
             print("Timeout raised and caught.")
+            print(e)
             if curr_cmd == COMMANDS[0]:
                 return "Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number."
             elif curr_cmd == COMMANDS[1]:
@@ -125,7 +142,7 @@ def send_server(self, message):
     else:
         return err
 
-def get_error(self, code):
+def get_error(code):
     """Gets the error message based on code
 
     Args:
@@ -143,18 +160,32 @@ def get_error(self, code):
         return error+"Command parameters do not match or is not allowed."
 
 
-def get_host(self) -> str: return udp_host
-def get_port(self) -> int: return udp_port
+def get_host() -> str: return udp_host
+def get_port() -> int: return udp_port
 
-def set_host(self, host): udp_host = host
-def set_port(self, port): udp_port = port
+def set_host(host): udp_host = host
+def set_port(port): udp_port = port
 
+def set_gui(g) : gui= g
 
 def receiver():
     while True:
         try:
-            message, _ = UDPClientSocket.recvfrom(BUFFER_SIZE)
-            print(message.decode('UTF-8'))
+            message, address = UDPClientSocket.recvfrom(BUFFER_SIZE)
+
+            # Leave after send/rcv
+            # shouldn't be affected by receiving messages after /leave, curr_cmd is a one-time thing
+            if curr_cmd == COMMANDS[1]:
+                udp_host = None
+                udp_port = None
+
+            decoded_msg = json.loads(message)
+            print(decoded_msg)
+
+            # If command is ALL / MSG / ?
+            if decoded_msg['command'] == COMMANDS[3:]:
+                gui.post(decoded_msg)
+            
         except:
             pass
 
