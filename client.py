@@ -179,8 +179,9 @@ def receiver():
 
     while True:
         try:
-            message = UDPClientSocket.recvfrom(BUFFER_SIZE)
-            print("RECEIVED SERVER: "+message)
+            message, _ = UDPClientSocket.recvfrom(BUFFER_SIZE)
+            print("RECEIVED SERVER: ")
+
             decoded_msg = json.loads(message)
             print(decoded_msg)
             print("Server message received!")
