@@ -7,6 +7,10 @@ import random
 BUFFER_SIZE = 1024
 COMMANDS = ['join', 'leave', 'register', 'all', 'message', '?']
 
+WELCOME_MSG = "Connection to the Message Board Server is successful!"
+LEAVE_MSG = "Connection closed. Thank you!"
+ERROR_REG = "Error: Registration failed. Handle or alias already exists."
+
 HELP = ''' 
     List of commands:\n
     /join <server_ip_address> <port> \n
@@ -61,17 +65,20 @@ def parse_message(message):
         # /register <handle>
         msg_dict['command'] = 'register'
         msg_dict['handle'] = msg[1]
+        curr_cmd = COMMANDS[2]
 
     elif msg[0] ==  COMMANDS[3] and len(msg) == 2:
         # /all <messsage>
         msg_dict['command'] = 'all'
         msg_dict['message'] = msg[1]
+        curr_cmd = COMMANDS[3]
     
     elif msg[0] == COMMANDS[4] and len(msg) == 3:
         # /msg <handle> <message>
         msg_dict['command'] = 'msg'
         msg_dict['handle'] = msg[1]
         msg_dict['message'] = msg[2]
+        curr_cmd = COMMANDS[4]
     
     elif msg[0] == COMMANDS[5] and len(msg) == 1:
         # /?
@@ -81,7 +88,7 @@ def parse_message(message):
     else:
         err = get_error(5)
 
-
+    print("ERR RECEIVED: " + str(err))
     msg_json = json.dumps(msg_dict)
 
     return (msg_json, err)
@@ -131,16 +138,13 @@ def send_server(message):
             print("Timeout raised and caught.")
             print(e)
             if curr_cmd == COMMANDS[0]:
-                return "Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number."
+                gui.post("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.")
             elif curr_cmd == COMMANDS[1]:
-                return "Error: Disconnection failed. Please connect to the server first."
+                gui.post("Error: Disconnection failed. Please connect to the server first.")
             else:
-                return "Error: Unknown error."
-            
-
-        return message.decode('UTF-8').strip()
+                gui.post("Error: Unknown error.")
     else:
-        return err
+        gui.post(err)
 
 def get_error(code):
     """Gets the error message based on code
@@ -166,7 +170,7 @@ def get_port() -> int: return udp_port
 def set_host(host): udp_host = host
 def set_port(port): udp_port = port
 
-def set_gui(g) : gui= g
+def set_gui(g) : gui= g; print(g)
 
 def receiver():
     global udp_host
@@ -175,19 +179,28 @@ def receiver():
     while True:
         try:
             message, address = UDPClientSocket.recvfrom(BUFFER_SIZE)
-
+            print("RECEIVED SERVER")
             decoded_msg = json.loads(message)
             print(decoded_msg)
 
             # Leave after send/rcv
             # shouldn't be affected by receiving messages after /leave, curr_cmd is a one-time thing
-            if decoded_msg['command'] == COMMANDS[1] and curr_cmd == COMMANDS[1]:
+            if decoded_msg['command'] == COMMANDS[0] and curr_cmd == COMMANDS[0]:
+                gui.post(WELCOME_MSG) 
+            elif decoded_msg['command'] == COMMANDS[1] and curr_cmd == COMMANDS[1]:
                 udp_host = None
                 udp_port = None
+                gui.post(LEAVE_MSG)
 
             # If command is ALL / MSG / ? / error
-            if decoded_msg['command'] == COMMANDS[3:]:
+            if decoded_msg['command'] == COMMANDS[3]:
                 gui.post(decoded_msg['message'])
+            elif decoded_msg['command'] == COMMANDS[4]:
+                rcv_msg = "[From {handle}]: {message}".format(decoded_msg['handle'], decoded_msg['message'])
+                gui.post(rcv_msg)
+            
+            if decoded_msg['command'] == COMMANDS[6]:
+                gui.post(decoded_msg['error'])
             
         except:
             pass
