@@ -27,12 +27,10 @@ handles = []
 
 def find_handle(address):
     found_handle = None 
-    
     for user in users:
         if user[0] == address:
             found_handle = user[1]
             break
-    
     return found_handle
 
 def read_command(cmd, addr):
@@ -60,9 +58,9 @@ def parse_system_cmd():
         try:
             while not system_msg.empty():
                 message, address = system_msg.get()
-                print("SYS: "+message.decode('UTF-8')+"\n")
+                print("SYS: "+message.decode()+"\n")
 
-                msg_dict = json.loads(message)
+                msg_dict = json.loads(message.decode())
                 ret_msg = {'command':'None'}
                 
                 if msg_dict['command'] == 'join':
@@ -107,16 +105,18 @@ def parse_system_cmd():
                         bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
                         UDPServerSocket.sendto(bytesToSend, address)
                 elif msg_dict['command'] == 'all':
-                    ret_msg['command'] == 'all'
+                    ret_msg['command'] = 'all'
 
                     user_handle = find_handle(address)
-                    handled_msg = "{handle}: {message}".format(user_handle, msg_dict['message'])
-                
+                    user_msg = msg_dict['message']
+
+                    handled_msg = "{handle}: {message}".format(handle=user_handle, message=user_msg)
+                    print('handling msg now') 
                     ret_msg['message'] = handled_msg
                     ret_msg = json.dumps(ret_msg)
 
                     # The handled message now contains the handle to broadcast
-                    bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
+                    bytesToSend = str.encode(ret_msg)
                     for client in clients:
                         UDPServerSocket.sendto(bytesToSend, client)
 
@@ -128,7 +128,7 @@ def parse_system_cmd():
 
                     dest_address = msg_dict['handle']
 
-                    bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
+                    bytesToSend = str.encode(ret_msg, 'UTF-8')
                     UDPServerSocket.sendto(bytesToSend, dest_address)
                 system_msg.task_done() 
         except:

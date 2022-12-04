@@ -4,11 +4,10 @@ import socket
 import threading
 
 BUFFER_SIZE = 1024
-COMMANDS = ['join', 'leave', 'register', 'all', 'message', '?']
+COMMANDS = ['join', 'leave', 'register', 'all', 'msg', '?']
 
 WELCOME_MSG = "Connection to the Message Board Server is successful!"
 LEAVE_MSG = "Connection closed. Thank you!"
-ERROR_REG = "Error: Registration failed. Handle or alias already exists."
 
 HELP = ''' 
     List of commands:\n
@@ -94,13 +93,13 @@ def handle_adder(message):
     if message['command'] == COMMANDS[3]:
         # /all
         if message['handle'] != None:
-            return "{handle}: {msg}".format(message['handle'], message['message'])
+            return "{handle}: {msg}".format(handle=message['handle'], msg=message['message'])
         else:
             return message['message']
     
     elif message['command'] == COMMANDS[4]:
         # /msg
-        return "[From {handle}]: {msg}".format(message['handle'], message['message'])
+        return "[From {handle}]: {msg}".format(handle=message['handle'], msg=message['message'])
 
 def send_server(message):
     msg, err = parse_message(message)
@@ -127,7 +126,7 @@ def send_server(message):
             if curr_cmd == COMMANDS[4]:
                 # /msg
                 msg_dict = json.dumps(msg)
-                gui.post("[To {handle}]: {msg}".format(msg_dict['handle'], msg_dict['message']))
+                gui.post("[To {handle}]: {msg}".format(handle=msg_dict['handle'], msg=msg_dict['message']))
             UDPClientSocket.settimeout(None)
 
         except Exception as e:
@@ -186,9 +185,9 @@ def receiver():
             print(decoded_msg)
             print("\n")
 
-            print("CURR_CMD: "+str(curr_cmd))
-            print(decoded_msg['command'] == COMMANDS[2])
-            print(curr_cmd == COMMANDS[2])
+            # print("CURR_CMD: "+str(curr_cmd))
+            # print(decoded_msg['command'] == COMMANDS[2])
+            # print(curr_cmd == COMMANDS[2])
             # Leave after send/rcv
             # shouldn't be affected by receiving messages after /leave, curr_cmd is a one-time thing
             if decoded_msg['command'] == COMMANDS[0] and curr_cmd == COMMANDS[0]:
@@ -201,17 +200,16 @@ def receiver():
                 handle_msg = "Welcome "+str(decoded_msg['handle'])+"!"
                 gui.post(handle_msg)
             # If command is ALL / MSG / ? / error
-            if decoded_msg['command'] == COMMANDS[3]:
+            elif decoded_msg['command'] == COMMANDS[3]:
                 gui.post(decoded_msg['message'])
             elif decoded_msg['command'] == COMMANDS[4]:
-                rcv_msg = "[From {handle}]: {message}".format(decoded_msg['handle'], decoded_msg['message'])
+                rcv_msg = "[From {handle}]: {message}".format(handle=decoded_msg['handle'], message=decoded_msg['message'])
                 gui.post(rcv_msg)
             
             if decoded_msg['command'] == COMMANDS[6]:
                 gui.post(decoded_msg['error'])
                 pass
            
-            print("NO ERRORS!")
         except Exception as e:
             # This will spam if you print exceptions.
             if e != WindowsError.winerror:
