@@ -25,12 +25,16 @@ handles = []
 # Commands:
 # join, leave, register, all, msg, error
 
-def find_handle(address):
+def find_handle(address, get=0):
     found_handle = None 
     for user in users:
-        if user[0] == address:
+        if get==0 and user[0] == address:
             found_handle = user[1]
             break
+        elif get != 0 and user[1] == address:
+            found_handle = user[0]
+            break
+
     return found_handle
 
 def read_command(cmd, addr):
@@ -111,7 +115,6 @@ def parse_system_cmd():
                     user_msg = msg_dict['message']
 
                     handled_msg = "{handle}: {message}".format(handle=user_handle, message=user_msg)
-                    print('handling msg now') 
                     ret_msg['message'] = handled_msg
                     ret_msg = json.dumps(ret_msg)
 
@@ -125,10 +128,10 @@ def parse_system_cmd():
                     ret_msg['message'] = msg_dict['message']
                     ret_msg['handle'] = find_handle(address)
                     ret_msg = json.dumps(ret_msg)
-
-                    dest_address = msg_dict['handle']
-
-                    bytesToSend = str.encode(ret_msg, 'UTF-8')
+                    
+                    dest_address = find_handle(msg_dict['handle'], 1)
+                    print("dest: "+str(dest_address))
+                    bytesToSend = str.encode(ret_msg)
                     UDPServerSocket.sendto(bytesToSend, dest_address)
                 system_msg.task_done() 
         except:

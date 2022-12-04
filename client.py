@@ -111,12 +111,10 @@ def send_server(message):
 
     if err == None:
         serverAddressPort = (udp_host, udp_port)
-        bytesToSend = str.encode(msg, 'UTF-8')
+        bytesToSend = str.encode(msg)
 
         print("UDP Target IP:", udp_host)
         print("UDP Target port:", udp_port)
-
-        
 
         try:
             UDPClientSocket.settimeout(5)
@@ -125,7 +123,7 @@ def send_server(message):
             
             if curr_cmd == COMMANDS[4]:
                 # /msg
-                msg_dict = json.dumps(msg)
+                msg_dict = json.loads(msg)
                 gui.post("[To {handle}]: {msg}".format(handle=msg_dict['handle'], msg=msg_dict['message']))
             UDPClientSocket.settimeout(None)
 
@@ -203,7 +201,7 @@ def receiver():
             elif decoded_msg['command'] == COMMANDS[3]:
                 gui.post(decoded_msg['message'])
             elif decoded_msg['command'] == COMMANDS[4]:
-                rcv_msg = "[From {handle}]: {message}".format(handle=decoded_msg['handle'], message=decoded_msg['message'])
+                rcv_msg = "[From {handle}]: {message}".format(handle=str(decoded_msg['handle']), message=str(decoded_msg['message']))
                 gui.post(rcv_msg)
             
             if decoded_msg['command'] == COMMANDS[6]:
@@ -213,7 +211,8 @@ def receiver():
         except Exception as e:
             # This will spam if you print exceptions.
             if e != WindowsError.winerror:
-                print(e)
+                pass
+                #print(e)
             
 
 # Separate thread for receiving from server
