@@ -64,17 +64,17 @@ def parse_message(message):
         msg_dict['handle'] = msg[1]
         curr_cmd = COMMANDS[2]
 
-    elif msg[0] ==  COMMANDS[3] and len(msg) == 2:
+    elif msg[0] == COMMANDS[3] and len(msg) >= 2:
         # /all <messsage>
         msg_dict['command'] = 'all'
-        msg_dict['message'] = msg[1]
+        msg_dict['message'] = ' '.join(msg[1:])
         curr_cmd = COMMANDS[3]
     
-    elif msg[0] == COMMANDS[4] and len(msg) == 3:
+    elif msg[0] == COMMANDS[4] and len(msg) >= 3:
         # /msg <handle> <message>
         msg_dict['command'] = 'msg'
         msg_dict['handle'] = msg[1]
-        msg_dict['message'] = msg[2]
+        msg_dict['message'] = ' '.join(msg[2:])
         curr_cmd = COMMANDS[4]
     
     elif msg[0] == COMMANDS[5] and len(msg) == 1:
