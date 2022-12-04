@@ -25,21 +25,15 @@ handles = []
 # Commands:
 # join, leave, register, all, msg, error
 
-def add_user(address, handle=None):
-    msg = ""
-
-    if handle != None:
-        if handle not in handles:
-            # Give handle to address 
-            users[users.index((address,None))] = (address,handle)
-            handles.append(handle)
-            msg = "Welcome "+handle+"!"
-        else:
-            msg = "Error: Registration failed. Handle or alias already exists."
-    else:
-        users.append((address, handle))
+def find_handle(address):
+    found_handle = None 
     
-    return msg
+    for user in users:
+        if user[0] == address:
+            found_handle = user[1]
+            break
+    
+    return found_handle
 
 def read_command(cmd, addr):
     """ Parses the JSON input and executes command
@@ -56,11 +50,7 @@ def read_command(cmd, addr):
 
     if cmd_dict['command'] == 'join':  
         msg = "Connection to the Message Board Server is successful!"
-        add_user(addr)
     elif cmd_dict['command'] == 'leave': msg = "Connection closed. Thank you!"
-    elif cmd_dict['command'] == 'register':
-        # No handle checking yet
-        msg = add_user(addr, cmd_dict['handle'])
 
 
     return msg;
@@ -73,18 +63,72 @@ def parse_system_cmd():
                 print("SYS: "+message.decode('UTF-8'))
 
                 msg_dict = json.loads(message)
-
+                ret_msg = {'command':'None'}
                 
                 if msg_dict['command'] == 'join':
-                    bytesToSend = str.encode(WELCOME_MSG, 'UTF-8')
+                    ret_msg['command'] = 'join'
+                    ret_msg = json.dumps(ret_msg)
+
+                    bytesToSend = str.encode(ret_msg, 'UTF-8')
                     UDPServerSocket.sendto(bytesToSend, address)
                     clients.append(address)
+
                 elif msg_dict['command'] == 'leave':
-                    bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
+                    ret_msg['command'] = 'leave'
+                    ret_msg = json.dumps(ret_msg)
+
+                    bytesToSend = str.encode(ret_msg, 'UTF-8')
                     UDPServerSocket.sendto(bytesToSend, address)
                     clients.remove(address)
-                #elif msg_dict['command'] == 'register':
+                    # Do we remove the handle upon leave? take note! 
+                elif msg_dict['command'] == 'register':
+                    
+                    handle = msg_dict['handle']
 
+                    if handle not in handles:
+                        ret_msg['command'] = 'register'
+                        ret_msg = json.dumps(ret_msg)
+
+                        new_user = (address, handle)
+                        # Give handle to address 
+                        users.append(new_user)
+                        handles.append(handle)
+                        
+                        bytesToSend = str.encode(ret_msg, 'UTF-8')
+                        UDPServerSocket.sendto(bytesToSend, address)
+                        
+                    else:
+                        ret_msg['command'] = 'error'
+                        ret_msg['message'] = 'Registration failed. Handle or alias already exists.'
+                        ret_msg = json.dumps(ret_msg)
+
+                        bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
+                        UDPServerSocket.sendto(bytesToSend, address)
+                elif msg_dict['command'] == 'all':
+                    ret_msg['command'] == 'all'
+
+                    user_handle = find_handle(address)
+                    handled_msg = "{handle}: {message}".format(user_handle, msg_dict['message'])
+                
+                    ret_msg['message'] = handled_msg
+                    ret_msg = json.dumps(ret_msg)
+
+                    # The handled message now contains the handle to broadcast
+                    bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
+                    for client in clients:
+                        UDPServerSocket.sendto(bytesToSend, client)
+
+                elif msg_dict['command'] == 'msg':
+                    ret_msg['command'] = 'msg'
+                    ret_msg['message'] = msg_dict['message']
+                    ret_msg['handle'] = find_handle(address)
+                    ret_msg = json.dumps(ret_msg)
+
+                    dest_address = msg_dict['handle']
+
+                    bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
+                    UDPServerSocket.sendto(bytesToSend, dest_address)
+                     
         except:
             pass
 
