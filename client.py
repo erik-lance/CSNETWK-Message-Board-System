@@ -169,22 +169,25 @@ def set_port(port): udp_port = port
 def set_gui(g) : gui= g
 
 def receiver():
+    global udp_host
+    global udp_port
+
     while True:
         try:
             message, address = UDPClientSocket.recvfrom(BUFFER_SIZE)
 
-            # Leave after send/rcv
-            # shouldn't be affected by receiving messages after /leave, curr_cmd is a one-time thing
-            if curr_cmd == COMMANDS[1]:
-                udp_host = None
-                udp_port = None
-
             decoded_msg = json.loads(message)
             print(decoded_msg)
 
-            # If command is ALL / MSG / ?
+            # Leave after send/rcv
+            # shouldn't be affected by receiving messages after /leave, curr_cmd is a one-time thing
+            if decoded_msg['command'] == COMMANDS[1] and curr_cmd == COMMANDS[1]:
+                udp_host = None
+                udp_port = None
+
+            # If command is ALL / MSG / ? / error
             if decoded_msg['command'] == COMMANDS[3:]:
-                gui.post(decoded_msg)
+                gui.post(decoded_msg['message'])
             
         except:
             pass
