@@ -48,6 +48,7 @@ class GUI:
             """
             print('RECEIVED CLIENT MSG')
             print(message)
+            print("\n")
 
             self.text_board.insert(tk.END, "\n" + message)
 

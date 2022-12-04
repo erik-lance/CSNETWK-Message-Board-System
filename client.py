@@ -86,7 +86,6 @@ def parse_message(message):
     else:
         err = get_error(5)
 
-    print("ERR RECEIVED: " + str(err))
     msg_json = json.dumps(msg_dict)
 
     return (msg_json, err)
@@ -175,16 +174,16 @@ def set_gui(g) :
 def receiver():
     global udp_host
     global udp_port
+    global curr_cmd
     global gui
 
     while True:
         try:
             message, _ = UDPClientSocket.recvfrom(BUFFER_SIZE)
-            print("RECEIVED SERVER: ")
-
+            print("RECEIVED SERVER")
             decoded_msg = json.loads(message)
             print(decoded_msg)
-            print("Server message received!")
+            print("\n")
 
             # Leave after send/rcv
             # shouldn't be affected by receiving messages after /leave, curr_cmd is a one-time thing
@@ -194,7 +193,9 @@ def receiver():
                 udp_host = None
                 udp_port = None
                 gui.post(LEAVE_MSG)
-
+            elif decoded_msg['command'] == COMMANDS[2] and curr_cmd == COMMANDS[2]:
+                handle_msg = "Welcome {handle}".format(decoded_msg['handle'])
+                gui.post(handle_msg)
             # If command is ALL / MSG / ? / error
             if decoded_msg['command'] == COMMANDS[3]:
                 gui.post(decoded_msg['message'])
@@ -207,6 +208,7 @@ def receiver():
                 pass
            
         except:
+            # This will spam if you print exceptions.
             pass
 
 # Separate thread for receiving from server
