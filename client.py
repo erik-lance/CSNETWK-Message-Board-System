@@ -128,7 +128,8 @@ def send_server(message):
                 # /msg
                 msg_dict = json.dumps(msg)
                 gui.post("[To {handle}]: {msg}".format(msg_dict['handle'], msg_dict['message']))
-       
+            UDPClientSocket.settimeout(None)
+
         except Exception as e:
             print("Timeout raised and caught.")
             print(e)
@@ -181,10 +182,13 @@ def receiver():
         try:
             message, _ = UDPClientSocket.recvfrom(BUFFER_SIZE)
             print("RECEIVED SERVER")
-            decoded_msg = json.loads(message)
+            decoded_msg = json.loads(message.decode())
             print(decoded_msg)
             print("\n")
 
+            print("CURR_CMD: "+str(curr_cmd))
+            print(decoded_msg['command'] == COMMANDS[2])
+            print(curr_cmd == COMMANDS[2])
             # Leave after send/rcv
             # shouldn't be affected by receiving messages after /leave, curr_cmd is a one-time thing
             if decoded_msg['command'] == COMMANDS[0] and curr_cmd == COMMANDS[0]:
@@ -194,7 +198,7 @@ def receiver():
                 udp_port = None
                 gui.post(LEAVE_MSG)
             elif decoded_msg['command'] == COMMANDS[2] and curr_cmd == COMMANDS[2]:
-                handle_msg = "Welcome {handle}".format(decoded_msg['handle'])
+                handle_msg = "Welcome "+str(decoded_msg['handle'])+"!"
                 gui.post(handle_msg)
             # If command is ALL / MSG / ? / error
             if decoded_msg['command'] == COMMANDS[3]:
@@ -207,9 +211,12 @@ def receiver():
                 gui.post(decoded_msg['error'])
                 pass
            
-        except:
+            print("NO ERRORS!")
+        except Exception as e:
             # This will spam if you print exceptions.
-            pass
+            if e != WindowsError.winerror:
+                print(e)
+            
 
 # Separate thread for receiving from server
 t1 = threading.Thread(target=receiver)

@@ -60,7 +60,7 @@ def parse_system_cmd():
         try:
             while not system_msg.empty():
                 message, address = system_msg.get()
-                print("SYS: "+message.decode('UTF-8'))
+                print("SYS: "+message.decode('UTF-8')+"\n")
 
                 msg_dict = json.loads(message)
                 ret_msg = {'command':'None'}
@@ -68,8 +68,9 @@ def parse_system_cmd():
                 if msg_dict['command'] == 'join':
                     ret_msg['command'] = 'join'
                     ret_msg = json.dumps(ret_msg)
+                 
+                    bytesToSend = str.encode(ret_msg)
 
-                    bytesToSend = str.encode(ret_msg, 'UTF-8')
                     UDPServerSocket.sendto(bytesToSend, address)
                     clients.append(address)
 
@@ -87,6 +88,7 @@ def parse_system_cmd():
 
                     if handle not in handles:
                         ret_msg['command'] = 'register'
+                        ret_msg['handle'] = handle
                         ret_msg = json.dumps(ret_msg)
 
                         new_user = (address, handle)
@@ -94,7 +96,7 @@ def parse_system_cmd():
                         users.append(new_user)
                         handles.append(handle)
                         
-                        bytesToSend = str.encode(ret_msg, 'UTF-8')
+                        bytesToSend = str.encode(ret_msg)
                         UDPServerSocket.sendto(bytesToSend, address)
                         
                     else:
@@ -128,7 +130,7 @@ def parse_system_cmd():
 
                     bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
                     UDPServerSocket.sendto(bytesToSend, dest_address)
-                     
+                system_msg.task_done() 
         except:
             pass
 
