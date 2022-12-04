@@ -2,7 +2,6 @@ import json
 import model as model
 import socket
 import threading
-import queue
 
 BUFFER_SIZE = 1024
 COMMANDS = ['join', 'leave', 'register', 'all', 'message', '?']
@@ -25,7 +24,6 @@ UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 udp_host = None
 udp_port = None
 curr_cmd = None
-server_msg = queue.Queue()
 gui = None
 
 
@@ -174,38 +172,6 @@ def set_gui(g) :
     global gui
     gui= g
 
-def execute_command():
-    global udp_host
-    global udp_port
-    global gui
-
-    while True:
-        try:
-            while not server_msg.empty():
-                print("Server message received!")
-                decoded_msg = server_msg.get()
-                # Leave after send/rcv
-                # shouldn't be affected by receiving messages after /leave, curr_cmd is a one-time thing
-                if decoded_msg['command'] == COMMANDS[0] and curr_cmd == COMMANDS[0]:
-                    gui.post(WELCOME_MSG) 
-                elif decoded_msg['command'] == COMMANDS[1] and curr_cmd == COMMANDS[1]:
-                    udp_host = None
-                    udp_port = None
-                    gui.post(LEAVE_MSG)
-
-                # If command is ALL / MSG / ? / error
-                if decoded_msg['command'] == COMMANDS[3]:
-                    gui.post(decoded_msg['message'])
-                elif decoded_msg['command'] == COMMANDS[4]:
-                    rcv_msg = "[From {handle}]: {message}".format(decoded_msg['handle'], decoded_msg['message'])
-                    gui.post(rcv_msg)
-                
-                if decoded_msg['command'] == COMMANDS[6]:
-                    gui.post(decoded_msg['error'])
-                    pass
-        except:
-            pass
-
 def receiver():
     global udp_host
     global udp_port
@@ -214,11 +180,30 @@ def receiver():
     while True:
         try:
             message = UDPClientSocket.recvfrom(BUFFER_SIZE)
-            print("RECEIVED SERVER")
+            print("RECEIVED SERVER: "+message)
             decoded_msg = json.loads(message)
             print(decoded_msg)
+            print("Server message received!")
 
-            server_msg.put(decoded_msg)
+            # Leave after send/rcv
+            # shouldn't be affected by receiving messages after /leave, curr_cmd is a one-time thing
+            if decoded_msg['command'] == COMMANDS[0] and curr_cmd == COMMANDS[0]:
+                gui.post(WELCOME_MSG) 
+            elif decoded_msg['command'] == COMMANDS[1] and curr_cmd == COMMANDS[1]:
+                udp_host = None
+                udp_port = None
+                gui.post(LEAVE_MSG)
+
+            # If command is ALL / MSG / ? / error
+            if decoded_msg['command'] == COMMANDS[3]:
+                gui.post(decoded_msg['message'])
+            elif decoded_msg['command'] == COMMANDS[4]:
+                rcv_msg = "[From {handle}]: {message}".format(decoded_msg['handle'], decoded_msg['message'])
+                gui.post(rcv_msg)
+            
+            if decoded_msg['command'] == COMMANDS[6]:
+                gui.post(decoded_msg['error'])
+                pass
            
         except:
             pass
@@ -226,5 +211,3 @@ def receiver():
 # Separate thread for receiving from server
 t1 = threading.Thread(target=receiver)
 t1.start()
-t2 = threading.Thread(target=execute_command)
-t2.start()
