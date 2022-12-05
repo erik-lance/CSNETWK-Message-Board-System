@@ -80,7 +80,7 @@ def parse_system_cmd():
                     ret_msg['command'] = 'leave'
                     ret_msg = json.dumps(ret_msg)
 
-                    bytesToSend = str.encode(ret_msg, 'UTF-8')
+                    bytesToSend = str.encode(ret_msg)
                     UDPServerSocket.sendto(bytesToSend, address)
                     clients.remove(address)
                     # Do we remove the handle upon leave? take note! 
@@ -103,10 +103,10 @@ def parse_system_cmd():
                         
                     else:
                         ret_msg['command'] = 'error'
-                        ret_msg['message'] = 'Registration failed. Handle or alias already exists.'
+                        ret_msg['message'] = 'Error: Registration failed. Handle or alias already exists.'
                         ret_msg = json.dumps(ret_msg)
 
-                        bytesToSend = str.encode(LEAVE_MSG, 'UTF-8')
+                        bytesToSend = str.encode(ret_msg, 'UTF-8')
                         UDPServerSocket.sendto(bytesToSend, address)
                 elif msg_dict['command'] == 'all':
                     ret_msg['command'] = 'all'
@@ -114,25 +114,55 @@ def parse_system_cmd():
                     user_handle = find_handle(address)
                     user_msg = msg_dict['message']
 
-                    handled_msg = "{handle}: {message}".format(handle=user_handle, message=user_msg)
-                    ret_msg['message'] = handled_msg
-                    ret_msg = json.dumps(ret_msg)
+                    if user_handle != None:
+                        handled_msg = "{handle}: {message}".format(handle=user_handle, message=user_msg)
+                        ret_msg['message'] = handled_msg
+                        ret_msg = json.dumps(ret_msg)
 
-                    # The handled message now contains the handle to broadcast
-                    bytesToSend = str.encode(ret_msg)
-                    for client in clients:
-                        UDPServerSocket.sendto(bytesToSend, client)
+                        # The handled message now contains the handle to broadcast
+                        bytesToSend = str.encode(ret_msg)
+                        for client in clients:
+                            UDPServerSocket.sendto(bytesToSend, client)
+                    else:
+                        ret_msg['command'] = 'error'
+                        ret_msg['message'] = 'Error: You need to register a handle first.'
+                        ret_msg = json.dumps(ret_msg)
+
+                        # Returns error to client.
+                        bytesToSend = str.encode(ret_msg)
+                        UDPServerSocket.sendto(bytesToSend, address)
 
                 elif msg_dict['command'] == 'msg':
                     ret_msg['command'] = 'msg'
                     ret_msg['message'] = msg_dict['message']
-                    ret_msg['handle'] = find_handle(address)
-                    ret_msg = json.dumps(ret_msg)
-                    
-                    dest_address = find_handle(msg_dict['handle'], 1)
-                    print("dest: "+str(dest_address))
-                    bytesToSend = str.encode(ret_msg)
-                    UDPServerSocket.sendto(bytesToSend, dest_address)
+                    user_handle = find_handle(address)
+
+                    if user_handle != None:
+                        ret_msg['handle'] = find_handle(address)
+                        ret_msg = json.dumps(ret_msg)
+                        
+                        dest_address = find_handle(msg_dict['handle'], 1)
+
+                        if dest_address != None:
+                            bytesToSend = str.encode(ret_msg)
+                            UDPServerSocket.sendto(bytesToSend, dest_address)
+                        else:
+                            ret_msg['command'] = 'error'
+                            ret_msg['message'] = 'Error: Handle or alias not found.'
+                            ret_msg = json.dumps(ret_msg)
+
+                            # Returns error to client.
+                            bytesToSend = str.encode(ret_msg)
+                            UDPServerSocket.sendto(bytesToSend, address)
+                    else:
+                        ret_msg['command'] = 'error'
+                        ret_msg['message'] = 'Error: You need to register a handle first.'
+                        ret_msg = json.dumps(ret_msg)
+
+                        # Returns error to client.
+                        bytesToSend = str.encode(ret_msg)
+                        UDPServerSocket.sendto(bytesToSend, address)
+
                 system_msg.task_done() 
         except:
             pass
