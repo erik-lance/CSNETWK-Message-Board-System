@@ -2,7 +2,7 @@ import socket
 
 bufferSize = 1024
 
-udp_host = socket.gethostname()
+udp_host = "127.0.0.1" 
 udp_port = 12345
 
 
