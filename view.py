@@ -17,7 +17,11 @@ class GUI:
         app = client_app
         app.set_gui(self)
 
+
         def send():
+            """
+                Sends to client the written text inside entry for it to send to server.
+            """
             app.send_server(e.get())
             print("MESSAGE SENT")
             e.delete(0, tk.END)
@@ -41,15 +45,15 @@ class GUI:
         self.window.mainloop()
     
     def post(self, message):
-            """Accessed by client object. Upon retrieval of message, tells view to post chat to board.
+        """Accessed by client object. Upon retrieval of message, tells view to post chat to board.
 
-            Args:
-                message (str): Message string to post to board.
-            """
-            print('RECEIVED CLIENT MSG')
-            print(message)
-            print("\n")
+        Args:
+            message (str): Message string to post to board.
+        """
+        print('RECEIVED CLIENT MSG')
+        print(message)
+        print("\n")
 
-            self.text_board.insert(tk.END, "\n" + message)
+        self.text_board.insert(tk.END, "\n" + message)
 
 GUI()
