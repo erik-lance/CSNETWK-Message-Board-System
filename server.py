@@ -68,6 +68,8 @@ def parse_system_cmd():
                 ret_msg = {'command':'None'}
                 
                 if msg_dict['command'] == 'join':
+                    print("Currently logged users: ")
+                    print(clients)
                     ret_msg['command'] = 'join'
                     ret_msg = json.dumps(ret_msg)
                  

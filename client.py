@@ -126,14 +126,13 @@ def connect_server(bytesToSend, serverAddressPort):
             print(decoded_msg)
             print("\n")
             
+            UDPClientSocket.settimeout(None)
             if decoded_msg['command'] == COMMANDS[0]: 
                 gui.post(WELCOME_MSG, 'join') 
-                t1.start()
             else:
                 gui.post("Error: Unexpected incorrect receive upon joining.", 'error')
-
         except Exception as e:
-            print("Timeout raised and caught.")
+            print("Timeout on connecting raised and caught.")
             print(e)
             gui.post("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.", 'error')
             udp_host = None
@@ -165,12 +164,11 @@ def send_server(message):
                 UDPClientSocket.settimeout(5)
                 UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
-                
+                UDPClientSocket.settimeout(None)
                 if curr_cmd == COMMANDS[4]:
                     # /msg
                     msg_dict = json.loads(msg)
                     gui.post("[To {handle}]: {msg}".format(handle=msg_dict['handle'], msg=msg_dict['message']), 'msg')
-                UDPClientSocket.settimeout(None)
 
             except Exception as e:
                 print("Timeout raised and caught.")
@@ -228,42 +226,43 @@ def receiver():
     global curr_cmd
     global gui
 
+    global connected
     while True:
-        try:
-            message, _ = UDPClientSocket.recvfrom(BUFFER_SIZE)
-            print("RECEIVED SERVER")
-            decoded_msg = json.loads(message.decode())
-            print(decoded_msg)
-            print("\n")
+        if connected:
+            try:
+                message, _ = UDPClientSocket.recvfrom(BUFFER_SIZE)
+                print("RECEIVED SERVER")
+                decoded_msg = json.loads(message.decode())
+                print(decoded_msg)
+                print("\n")
 
-            if decoded_msg['command'] == COMMANDS[1] and curr_cmd == COMMANDS[1]:
-                udp_host = None
-                udp_port = None
-                gui.post(LEAVE_MSG, 'leave')
-                global connected
-                connected = False
+                if decoded_msg['command'] == COMMANDS[1] and curr_cmd == COMMANDS[1]:
+                    udp_host = None
+                    udp_port = None
+                    gui.post(LEAVE_MSG, 'leave')
+                    connected = False
 
-            elif decoded_msg['command'] == COMMANDS[2] and curr_cmd == COMMANDS[2]:
-                handle_msg = "Welcome "+str(decoded_msg['handle'])+"!"
-                gui.post(handle_msg, 'register')
-            # If command is ALL / MSG / ? / error
-            elif decoded_msg['command'] == COMMANDS[3]:
-                gui.post(decoded_msg['message'], 'all')
-            elif decoded_msg['command'] == COMMANDS[4]:
-                rcv_msg = "[From {handle}]: {message}".format(handle=str(decoded_msg['handle']), message=str(decoded_msg['message']))
-                gui.post(rcv_msg, 'msg')
+                elif decoded_msg['command'] == COMMANDS[2] and curr_cmd == COMMANDS[2]:
+                    handle_msg = "Welcome "+str(decoded_msg['handle'])+"!"
+                    gui.post(handle_msg, 'register')
+                # If command is ALL / MSG / ? / error
+                elif decoded_msg['command'] == COMMANDS[3]:
+                    gui.post(decoded_msg['message'], 'all')
+                elif decoded_msg['command'] == COMMANDS[4]:
+                    rcv_msg = "[From {handle}]: {message}".format(handle=str(decoded_msg['handle']), message=str(decoded_msg['message']))
+                    gui.post(rcv_msg, 'msg')
+                
+                if decoded_msg['command'] == COMMANDS[6]:
+                    gui.post(decoded_msg['message'], 'error')
+                    pass
             
-            if decoded_msg['command'] == COMMANDS[6]:
-                gui.post(decoded_msg['message'], 'error')
-                pass
-           
-        except Exception as e:
-            # This will spam if you print exceptions.
-            if e != WindowsError.winerror:
-                pass
-                #print(e)
-            
+            except Exception as e:
+                # This will spam if you print exceptions.
+                if e != WindowsError.winerror:
+                    pass
+                    #print(e)
+                
 
 # Separate thread for receiving from server
 t1 = threading.Thread(target=receiver)
-#t1.start()
+t1.start()
