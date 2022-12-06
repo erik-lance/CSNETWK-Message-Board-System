@@ -81,9 +81,15 @@ def parse_system_cmd():
                     ret_msg = json.dumps(ret_msg)
 
                     bytesToSend = str.encode(ret_msg)
+                    
+                    handle = find_handle(address)
+                    
+                    if handle != None:
+                        users.remove((address, handle))
+                        handles.remove(handle)
+                    
                     UDPServerSocket.sendto(bytesToSend, address)
                     clients.remove(address)
-                    # Do we remove the handle upon leave? take note! 
                 elif msg_dict['command'] == 'register':
                     
                     handle = msg_dict['handle']
