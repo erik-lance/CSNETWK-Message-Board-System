@@ -68,6 +68,8 @@ def parse_system_cmd():
                 ret_msg = {'command':'None'}
                 
                 if msg_dict['command'] == 'join':
+                    print("Currently logged users: ")
+                    print(clients)
                     ret_msg['command'] = 'join'
                     ret_msg = json.dumps(ret_msg)
                  
@@ -81,9 +83,15 @@ def parse_system_cmd():
                     ret_msg = json.dumps(ret_msg)
 
                     bytesToSend = str.encode(ret_msg)
+                    
+                    handle = find_handle(address)
+                    
+                    if handle != None:
+                        users.remove((address, handle))
+                        handles.remove(handle)
+                    
                     UDPServerSocket.sendto(bytesToSend, address)
                     clients.remove(address)
-                    # Do we remove the handle upon leave? take note! 
                 elif msg_dict['command'] == 'register':
                     
                     handle = msg_dict['handle']
