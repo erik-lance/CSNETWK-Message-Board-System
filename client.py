@@ -127,20 +127,20 @@ def connect_server(bytesToSend, serverAddressPort):
             print("\n")
             
             if decoded_msg['command'] == COMMANDS[0]: 
-                gui.post(WELCOME_MSG) 
+                gui.post(WELCOME_MSG, 'join') 
                 t1.start()
             else:
-                gui.post("Error: Unexpected incorrect receive upon joining.")
+                gui.post("Error: Unexpected incorrect receive upon joining.", 'error')
 
         except Exception as e:
             print("Timeout raised and caught.")
             print(e)
-            gui.post("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.")
+            gui.post("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.", 'error')
             udp_host = None
             udp_port = None
             # UDPClientSocket.close()
     else:
-        gui.post("Error: Already connected to {host}:{port}".format(host=udp_host, port=udp_port))
+        gui.post("Error: Already connected to {host}:{port}".format(host=udp_host, port=udp_port), 'error')
 
 def send_server(message):
     msg, err = parse_message(message)
@@ -169,22 +169,22 @@ def send_server(message):
                 if curr_cmd == COMMANDS[4]:
                     # /msg
                     msg_dict = json.loads(msg)
-                    gui.post("[To {handle}]: {msg}".format(handle=msg_dict['handle'], msg=msg_dict['message']))
+                    gui.post("[To {handle}]: {msg}".format(handle=msg_dict['handle'], msg=msg_dict['message']), 'msg')
                 UDPClientSocket.settimeout(None)
 
             except Exception as e:
                 print("Timeout raised and caught.")
                 print(e)
                 if curr_cmd == COMMANDS[0]:
-                    gui.post("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.")
+                    gui.post("Error: Connection to the Message Board Server has failed! Please check IP Address and Port Number.", 'error')
                 elif curr_cmd == COMMANDS[1]:
-                    gui.post("Error: Disconnection failed. Please connect to the server first.")
+                    gui.post("Error: Disconnection failed. Please connect to the server first.", 'error')
                 else:
-                    gui.post("Error: Unknown error.")
+                    gui.post("Error: Unknown error.", 'error')
                 UDPClientSocket.close()
 
     else:
-        gui.post(err)
+        gui.post(err, 'error')
 
 def get_error(code):
     """Gets the error message based on code
@@ -239,22 +239,22 @@ def receiver():
             if decoded_msg['command'] == COMMANDS[1] and curr_cmd == COMMANDS[1]:
                 udp_host = None
                 udp_port = None
-                gui.post(LEAVE_MSG)
+                gui.post(LEAVE_MSG, 'leave')
                 global connected
                 connected = False
 
             elif decoded_msg['command'] == COMMANDS[2] and curr_cmd == COMMANDS[2]:
                 handle_msg = "Welcome "+str(decoded_msg['handle'])+"!"
-                gui.post(handle_msg)
+                gui.post(handle_msg, 'register')
             # If command is ALL / MSG / ? / error
             elif decoded_msg['command'] == COMMANDS[3]:
-                gui.post(decoded_msg['message'])
+                gui.post(decoded_msg['message'], 'all')
             elif decoded_msg['command'] == COMMANDS[4]:
                 rcv_msg = "[From {handle}]: {message}".format(handle=str(decoded_msg['handle']), message=str(decoded_msg['message']))
-                gui.post(rcv_msg)
+                gui.post(rcv_msg, 'msg')
             
             if decoded_msg['command'] == COMMANDS[6]:
-                gui.post(decoded_msg['message'])
+                gui.post(decoded_msg['message'], 'error')
                 pass
            
         except Exception as e:

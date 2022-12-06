@@ -44,7 +44,7 @@ class GUI:
 
         self.window.mainloop()
 
-    def post(self, message):
+    def post(self, message, cmd):
         """Accessed by client object. Upon retrieval of message, tells view to post chat to board.
 
         Args:
