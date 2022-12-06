@@ -4,7 +4,7 @@ import client as client_app
 BG_GRAY = "#ABB2B9"
 BG_COLOR = "#17202A"
 TEXT_COLOR = "#EAECEE"
- 
+
 FONT = "Helvetica 14"
 FONT_BOLD = "Helvetica 13 bold"
 
@@ -26,7 +26,7 @@ class GUI:
             print("MESSAGE SENT")
             e.delete(0, tk.END)
 
-        
+
         label1= tk.Label(self.window, bg=BG_COLOR, fg=TEXT_COLOR, text="Welcome", font=FONT_BOLD, pady=10, width=20, height=1).grid(
         row=0)
 
@@ -38,12 +38,12 @@ class GUI:
 
         e = tk.Entry(self.window, bg="#2C3E50", fg=TEXT_COLOR, font=FONT, width=55)
         e.grid(row=2, column=0)
-    
+
         send = tk.Button(self.window, text="Send", font=FONT_BOLD, bg=BG_GRAY,
                 command=send).grid(row=2, column=1)
 
         self.window.mainloop()
-    
+
     def post(self, message):
         """Accessed by client object. Upon retrieval of message, tells view to post chat to board.
 
@@ -51,9 +51,28 @@ class GUI:
             message (str): Message string to post to board.
         """
         print('RECEIVED CLIENT MSG')
-        print(message)
+        self.currMsg = message
+        print(self.currMsg)
         print("\n")
 
+        newMsg = self.editText(self.currMsg)
+
         self.text_board.insert(tk.END, "\n" + message)
+
+    def editText (self, message):
+        if (message[0] == "["):
+            split = message.split(']')
+            handle = split[0][1:]
+            print(handle)
+            content = split[1][1:].lstrip()
+            print(content)
+        else:
+            split = message.split(':')
+            handle = split[0]
+            print(handle)
+            content = split[1].lstrip()
+            print(content)
+
+
 
 GUI()
