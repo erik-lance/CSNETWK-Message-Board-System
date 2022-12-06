@@ -1,3 +1,4 @@
+from tkinter import *
 import tkinter as tk
 import client as client_app
 
@@ -42,6 +43,11 @@ class GUI:
         send = tk.Button(self.window, text="Send", font=FONT_BOLD, bg=BG_GRAY,
                 command=send).grid(row=2, column=1)
 
+        # frame = Frame(width=100, height=100, bg="red", colormap="new")
+        # frame.grid(sticky ='wn', row = 1, column = 0)
+
+        self.text_board.tag_config('user', background="yellow", foreground="red")
+
         self.window.mainloop()
 
     def post(self, message, cmd):
@@ -51,15 +57,28 @@ class GUI:
             message (str): Message string to post to board.
         """
         print('RECEIVED CLIENT MSG')
-        self.currMsg = message
-        print(self.currMsg)
+        self.curr_msg = message
+        print(self.curr_msg)
         print("\n")
 
-        newMsg = self.editText(self.currMsg)
+        if (cmd == "msg" or cmd == "all"):
+            msg_list = self.edit_text(self.curr_msg)
+            self.text_board.insert(tk.END, "\n" + msg_list[0], user)
+            self.text_board.insert(tk.END, "\n" + msg_list[1])
+            # new_msg = ("\n").join(msg_list)
+        else:
+            new_msg = message
+            self.text_board.insert(tk.END, "\n" + new_msg)
 
-        self.text_board.insert(tk.END, "\n" + message)
+        # self.insert_msg(new_msg)
 
-    def editText (self, message):
+
+    # def insert_msg(self, new_msg):
+    #     # frame = Frame(width=100, height=100, bg="red", colormap="new")
+    #     # frame.grid(sticky ='wn', row = 1, column = 0)
+    #     self.text_board.insert(tk.END, "\n" + new_msg)
+
+    def edit_text (self, message):
         if (message[0] == "["):
             split = message.split(']')
             handle = split[0][1:]
@@ -72,7 +91,9 @@ class GUI:
             print(handle)
             content = split[1].lstrip()
             print(content)
+        full_message = [handle, content]
 
+        return full_message
 
 
 GUI()
