@@ -4,7 +4,7 @@ import socket
 import threading
 
 BUFFER_SIZE = 1024
-COMMANDS = ['join', 'leave', 'register', 'all', 'msg', '?', 'error']
+COMMANDS = ['join', 'leave', 'register', 'all', 'msg', '?', 'error', 'ch']
 
 WELCOME_MSG = "Connection to the Message Board Server is successful!"
 LEAVE_MSG = "Connection closed. Thank you!"
@@ -51,7 +51,12 @@ def parse_message(message):
         # /join <server_ip_add> <port>
         msg_dict['command'] = 'join'
         udp_host = msg[1]
-        udp_port = int(msg[2])
+        try:
+            udp_port = int(msg[2])
+        except:
+            udp_host = None
+            udp_port = None
+            err = get_error(0)
         curr_cmd = COMMANDS[0]
     
     elif msg[0] == COMMANDS[1] and len(msg) == 1 and udp_host != None:
