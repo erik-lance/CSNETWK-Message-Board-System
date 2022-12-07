@@ -1,20 +1,29 @@
-from tkinter import *
+# from tkinter import *
 import tkinter as tk
 import client as client_app
 
 BG_GRAY = "#ABB2B9"
-BG_COLOR = "#17202A"
+BG_COLOR = "#3E2C41"
 TEXT_COLOR = "#EAECEE"
 
-FONT = "Helvetica 14"
+DARK_CLR = "#140E18"
+PURPLE = "#5C527F"
+
+FONT = "Arial 12"
 FONT_BOLD = "Helvetica 13 bold"
+
+H1 = "Arial 16 bold"
+H3 = "Arial 10 bold"
+SEND_BTN = "Arial 16 bold"
 
 class GUI:
 
     def __init__(self) -> None:
         self.window = tk.Tk()
-        self.window.title("Message Board System")
-        # window.geometry("500x500")
+        self.window.title("Message Board Server")
+        self.window.geometry("500x600")
+        self.window.resizable(False, False)
+        self.window.configure(bg = "#FFFFFF")
         app = client_app
         app.set_gui(self)
 
@@ -23,30 +32,159 @@ class GUI:
             """
                 Sends to client the written text inside entry for it to send to server.
             """
-            app.send_server(e.get())
+            app.send_server(e.get("1.0",'end-1c'))
             print("MESSAGE SENT")
-            e.delete(0, tk.END)
+            e.delete('1.0', tk.END)
+
+        canvas = tk.Canvas(
+            self.window,
+            bg = "#FFFFFF",
+            height = 600,
+            width = 500,
+            bd = 0,
+            highlightthickness = 0,
+            relief = "ridge"
+        )
+        canvas.grid()
+
+        # header_frame = tk.Frame(width=500, height=90, bg=DARK_CLR, colormap="new")
+        # header_frame.place(x=0, y=0)
+        canvas.create_rectangle(0.0, 0.0, 500.0, 90.0, fill=DARK_CLR, outline="")
+        canvas.create_text(
+            97.0,
+            18.0,
+            anchor="nw",
+            text="The Best Message Board Server",
+            fill="#FFFFFF",
+            font=("Arial Bold", 20 * -1)
+        )
+        canvas.create_rectangle(
+            9.0,
+            52.0,
+            491.0,
+            83.0,
+            fill="#5C527F",
+            outline="")
+
+        canvas.create_text(
+            16.0,
+            60.0,
+            anchor="nw",
+            text="Connected to 127.0.0.1:12345",
+            fill="#FFFFFF",
+            font=("Arial Bold", 12 * -1)
+        )
+
+        # canvas.create_rectangle(
+        #     0.0,
+        #     90.0,
+        #     485.0,
+        #     546.0,
+        #     fill="#261C2C",
+        #     outline="")
 
 
-        label1= tk.Label(self.window, bg=BG_COLOR, fg=TEXT_COLOR, text="Welcome", font=FONT_BOLD, pady=10, width=20, height=1).grid(
-        row=0)
 
-        self.text_board = tk.Text(self.window, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=60)
-        self.text_board.grid(row=1, column=0, columnspan=2)
+        self.text_canvas = tk.Canvas(
+            canvas,
+            bg = "#261C2C",
+            height = 456.0,
+            width = 500.0,
+            bd = 0,
+            highlightthickness = 0,
+            relief = "ridge")
+        self.text_canvas.place(x=0, y=90)
 
+        # scrollbar = tk.Scrollbar(self.text_canvas)
+        # scrollbar.place(relheight=1, relx=0.964)
+
+
+        self.text_board = tk.Text(self.text_canvas, bg=BG_COLOR, fg=TEXT_COLOR, width=50, font=FONT, wrap=tk.WORD)
+        self.text_board.place(height = 456.0,x=0,y=0)
+        # self.text_board.configure(state="disabled")
+        self.text_board.insert(tk.END, "Hi")
         scrollbar = tk.Scrollbar(self.text_board)
         scrollbar.place(relheight=1, relx=0.974)
 
-        e = tk.Entry(self.window, bg="#2C3E50", fg=TEXT_COLOR, font=FONT, width=55)
-        e.grid(row=2, column=0)
 
-        send = tk.Button(self.window, text="Send", font=FONT_BOLD, bg=BG_GRAY,
-                command=send).grid(row=2, column=1)
+        entry_canvas = tk.Canvas(canvas,
+            bg=DARK_CLR,
+            height =54.0,
+            width = 416.0,
+            bd = 0,
+            highlightthickness = 0,
+            relief = "ridge")
+        entry_canvas.place(x=0, y=546)
 
-        # frame = Frame(width=100, height=100, bg="red", colormap="new")
-        # frame.grid(sticky ='wn', row = 1, column = 0)
+        e = tk.Text(
+            bd=0,
+            bg="#3E2C41",
+            fg="#FFFFFF",
+            font = FONT,
+            highlightthickness=4,
+            relief = "flat",
+            highlightbackground = DARK_CLR,
+            highlightcolor = DARK_CLR,
+            padx= 3,
+            pady = 6
+        )
+        e.place(
+            x=0.0,
+            y=546.0,
+            width=417.0,
+            height=54.0
+        )
 
-        self.text_board.tag_config('user', background="yellow", foreground="red")
+        send = tk.Button(canvas, text="Send", font=SEND_BTN,
+            bg=DARK_CLR,
+            fg="#FFFFFF",
+            borderwidth=0,
+            highlightthickness=0,
+            activebackground="#3E2C41",
+            command=send,
+            relief="flat")
+        send.place(x=416, y=546, width=84.0 ,height=54.0)
+
+        # button_1 = tk.Button(
+        #     borderwidth=0,
+        #     highlightthickness=0,
+        #     command=lambda: print("button_1 clicked"),
+        #     relief="flat"
+        # )
+        # button_1.place(
+        #     x=416.0,
+        #     y=546.0,
+        #     width=84.0,
+        #     height=54.0
+        # )
+
+        # header_label1 = tk.Label(header_frame, bg=DARK_CLR,fg=TEXT_COLOR, text = "The Best Message Board Server", font=H1, height=1).place(x=97, y=18)
+        #TODO: CHANGE TEXT TO BE UPDATABLE
+        # header_label2 = tk.Label(canvas, bg=PURPLE,fg=TEXT_COLOR, text = "Connected to 127.0.0.1:12345", font=H3, padx=4, pady=6, width=59).place(x=9, y=52)
+        # header_text = tk.Text(header_frame, bg=PURPLE, fg=TEXT_COLOR, font=H1, width=482, height=31)
+
+        # self.text_board = tk.Text(self.window, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=10).place(x=0, y=90)
+
+
+        # label1= tk.Label(self.window, bg=BG_COLOR, fg=TEXT_COLOR, text="Welcome", font=FONT_BOLD, pady=10, width=20, height=1).grid(
+        # row=0)
+        #
+        # self.text_board = tk.Text(self.window, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=60)
+        # self.text_board.grid(row=1, column=0, columnspan=2)
+        #
+        # scrollbar = tk.Scrollbar(self.text_board)
+        # scrollbar.place(relheight=1, relx=0.974)
+        #
+        # e = tk.Entry(self.window, bg="#2C3E50", fg=TEXT_COLOR, font=FONT, width=55)
+        # e.grid(row=2, column=0)
+        #
+        # send = tk.Button(self.window, text="Send", font=FONT_BOLD, bg=BG_GRAY,
+        #         command=send).grid(row=2, column=1)
+        #
+        # # frame = Frame(width=100, height=100, bg="red", colormap="new")
+        # # frame.grid(sticky ='wn', row = 1, column = 0)
+        #
+        # self.text_board.tag_config('user', background="yellow", foreground="red")
 
         self.window.mainloop()
 
@@ -65,10 +203,19 @@ class GUI:
             msg_list = self.edit_text(self.curr_msg)
             self.text_board.insert(tk.END, "\n" + msg_list[0], user)
             self.text_board.insert(tk.END, "\n" + msg_list[1])
-            # new_msg = ("\n").join(msg_list)
+            new_msg = ("\n").join(msg_list)
+
         else:
             new_msg = message
             self.text_board.insert(tk.END, "\n" + new_msg)
+            # self.text_canvas.create_text(
+            #     87.0,
+            #     512.0,
+            #     anchor="nw",
+            #     text=new_msg,
+            #     fill="#F03030",
+            #     font=("Arial BoldMT", 15 * -1)
+            # )
 
         # self.insert_msg(new_msg)
 
