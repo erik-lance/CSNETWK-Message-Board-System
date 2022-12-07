@@ -18,6 +18,9 @@ H1 = ("Arial Bold", 20 * -1)
 H3 = "Arial 10 bold"
 SEND_BTN = "Arial 16 bold"
 
+MSG_CMD = "#3E2C41"
+ALL_CMD = DARK_CLR
+
 class GUI:
 
     def __init__(self) -> None:
@@ -29,8 +32,14 @@ class GUI:
         app = client_app
         app.set_gui(self)
 
+        self.host = app.get_host()
+        self.port = app.get_port()
+        print(self.host)
+        print(self.port)
+
 
         def send():
+            self.text_board.configure(state="normal")
             """
                 Sends to client the written text inside entry for it to send to server.
             """
@@ -49,17 +58,25 @@ class GUI:
         )
         canvas.grid()'''
 
-        header_frame = tk.Frame(bg=DARK_CLR)
-        header_frame.place(x=0, y=0, width=500, height=90)
-        header_label1 = tk.Label(header_frame, bg=DARK_CLR,fg=TEXT_COLOR, text = "The Best Message Board Server", font=H1).place(x=97, y=18)
-        header_label2 = tk.Label(header_frame, bg=PURPLE,fg=TEXT_COLOR, text = "Connected to 127.0.0.1:12345", font=("Arial Bold", 12 * -1), padx=4, pady=6,  anchor="w").place(x=9, y=52, width=482.0, height=31.0)
+        self.header_frame = tk.Frame(bg=DARK_CLR)
+        self.header_frame.place(x=0, y=0, width=500, height=90)
+        header_label1 = tk.Label(self.header_frame, bg=DARK_CLR,fg=TEXT_COLOR, text = "Message Board Server", font=H1).place(x=142, y=18)
+        self.header_label2 = tk.Label(self.header_frame, bg=PURPLE,fg=TEXT_COLOR, text = "Join the Server!", font=("Arial Bold", 12 * -1), padx=4, pady=6,  anchor="center").place(x=9, y=52, width=482.0, height=31.0)
+        self.text_board = tk.Text(self.window, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT)
+        self.text_board.place(x=0, y=90, width=500.0, height=456.0)
+        self.text_board.tag_config("error", foreground="#F13030")
+        self.text_board.tag_config("success", foreground="#30F189")
+        self.text_board.config(spacing3=10)
+        self.text_board.configure(state="disabled")
 
-        self.text_frame = tk.Frame(bg=BOARD_CLR)
-        self.text_frame.place(x=0, y=90, width=500.0, height=456.0)
+        scrollbar = tk.Scrollbar(self.text_board)
+        scrollbar.place(relheight=1, relx=0.974)
+        # self.text_frame = tk.Frame(bg=BOARD_CLR)
+        # self.text_frame.place(x=0, y=90, width=500.0, height=456.0)
         # scrollbar = tk.Scrollbar(self.text_frame)
         # scrollbar.place(relheight=1, relx=0.964)
-        myscrollbar=tk.Scrollbar(self.text_frame,orient="vertical")
-        myscrollbar.pack(side="right",fill="y")
+        # myscrollbar=tk.Scrollbar(self.text_frame,orient="vertical")
+        # myscrollbar.pack(side="right",fill="y")
 
         e = tk.Text(
             bd=0,
@@ -217,9 +234,9 @@ class GUI:
         #
         # self.text_board = tk.Text(self.window, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=60)
         # self.text_board.grid(row=1, column=0, columnspan=2)
-        #
-        # scrollbar = tk.Scrollbar(self.text_board)
-        # scrollbar.place(relheight=1, relx=0.974)
+        # #
+        # # scrollbar = tk.Scrollbar(self.text_board)
+        # # scrollbar.place(relheight=1, relx=0.974)
         #
         # e = tk.Entry(self.window, bg="#2C3E50", fg=TEXT_COLOR, font=FONT, width=55)
         # e.grid(row=2, column=0)
@@ -241,6 +258,48 @@ class GUI:
             color="#30F189"
         new_label = tk.Label(self.text_frame, bg=BOARD_CLR, fg=color, text = message, font=FONT_BOLD, wraplength=400, padx=10, pady=15).pack()
 
+
+    def add_message(self, handle, message, cmd):
+        if(cmd == "msg"):
+            print("HERE")
+            handle_label = tk.Label(self.text_frame, bg=BG_GRAY, fg=TEXT_COLOR, text = handle, font=FONT_BOLD, wraplength=400, padx=10, pady=5, anchor='w').pack(height = 52, width = 485)
+            msg_label = tk.Label(self.text_frame, bg=BG_GRAY, fg=TEXT_COLOR, text = message, font=FONT, wraplength=400, padx=10, pady=5, anchor='w').pack()
+            # new_canvas = Canvas(
+            #     self.text_frame,
+            #     bg = MSG_CMD,
+            #     height = 52,
+            #     width = 485,
+            #     bd = 0,
+            #     highlightthickness = 0,
+            #     relief = "ridge"
+            # )
+            # new_canvas.place(x=0, y=0)
+            # new_canvas.create_rectangle(
+            #     0.0,
+            #     0.0,
+            #     9.0,
+            #     52.0,
+            #     fill=TEXT_COLOR,
+            #     outline="")
+            # new_canvas.create_text(
+            #     16.0,
+            #     60.0,
+            #     anchor="nw",
+            #     text=message,
+            #     fill="#FFFFFF",
+            #     font=FONT_BOLD
+            # )
+
+            # new_frame = tk.Frame(self.text_frame, bg=MSG_CMD, pady=15).pack(w, widht=485, height=52)
+            # new_label = tk.LabelFrame(self.text_frame, bg=MSG_CMD, font=FONT_BOLD, fb=TEXT_COLOR, text=handle).pack()
+
+            # labelframe1 = LabelFrame(top, text="Positive Comments")
+            # labelframe1.pack(fill="both", expand="yes")
+
+# toplabel = Label(labelframe1, text="Place to put the positive comments")
+# toplabel.pack()
+
+
     def post(self, message, cmd):
         """Accessed by client object. Upon retrieval of message, tells view to post chat to board.
 
@@ -252,26 +311,17 @@ class GUI:
         print(self.curr_msg)
         print("\n")
 
+
         if (cmd == "msg" or cmd == "all"):
-            msg_list = self.edit_text(self.curr_msg)
-            # self.text_board.insert(tk.END, "\n" + msg_list[0], user)
-            # self.text_board.insert(tk.END, "\n" + msg_list[1])
-            # new_msg = ("\n").join(msg_list)
-
+            self.text_board.insert(tk.END, "\n" + message)
         else:
-            new_msg = message
-            self.add_text(message, cmd)
-            # self.text_board.insert(tk.END, "\n" + new_msg)
-            # self.text_canvas.create_text(
-            #     87.0,
-            #     512.0,
-            #     anchor="nw",
-            #     text=new_msg,
-            #     fill="#F03030",
-            #     font=("Arial BoldMT", 15 * -1)
-            # )
+            if (cmd== "error"):
+                self.text_board.insert(tk.END, "\n" + message, 'error')
+            else:
+                self.text_board.insert(tk.END, "\n" + message, 'success')
 
-        # self.insert_msg(new_msg)
+        self.text_board.configure(state="disabled")
+        # self.text_board.insert(tk.END, "\n" + message)
 
 
 
