@@ -143,18 +143,21 @@ def parse_system_cmd():
                 elif msg_dict['command'] == 'msg':
                     ret_msg['command'] = 'msg'
                     ret_msg['message'] = msg_dict['message']
+                    
                     user_handle = find_handle(address)
-
+                    
                     if user_handle != None:
                         ret_msg['handle'] = find_handle(address)
                         ret_msg = json.dumps(ret_msg)
-                        
+
+
                         dest_address = find_handle(msg_dict['handle'], 1)
 
                         if dest_address != None:
                             bytesToSend = str.encode(ret_msg)
                             UDPServerSocket.sendto(bytesToSend, dest_address)
                         else:
+                            ret_msg = json.loads(ret_msg)
                             ret_msg['command'] = 'error'
                             ret_msg['message'] = 'Error: Handle or alias not found.'
                             ret_msg = json.dumps(ret_msg)
