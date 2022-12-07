@@ -27,6 +27,7 @@ gui = None
 
 connected = False
 sending_msg = None
+cur_handle = None
 
 def parse_message(message):
     """Parses the message to JSON for reading for the server
@@ -218,6 +219,9 @@ def get_error(code):
     elif code == 5:
         return error+"Command parameters do not match or is not allowed."
 
+def get_handle() -> str:
+    global cur_handle
+    return cur_handle
 
 def get_host() -> str: 
     global udp_host
@@ -259,6 +263,8 @@ def receiver():
                 elif decoded_msg['command'] == COMMANDS[2] and curr_cmd == COMMANDS[2]:
                     handle_msg = "Welcome "+str(decoded_msg['handle'])+"!"
                     gui.post(handle_msg, 'register')
+                    global cur_handle
+                    cur_handle = decoded_msg['handle']
                 # If command is ALL / MSG / ? / error
                 elif decoded_msg['command'] == COMMANDS[3]:
                     gui.post(decoded_msg['message'], 'all')
