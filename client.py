@@ -26,6 +26,7 @@ curr_cmd = None
 gui = None
 
 connected = False
+sending_msg = None
 
 def parse_message(message):
     """Parses the message to JSON for reading for the server
@@ -123,10 +124,11 @@ def connect_server(bytesToSend, serverAddressPort):
             UDPClientSocket.settimeout(5)
             UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
+            print("Sending to a server...")
             message, _ = UDPClientSocket.recvfrom(BUFFER_SIZE)
             connected = True
 
-            print("RECEIVED SERVER")
+            print("RECEIVED SERVER CONNECTION")
             decoded_msg = json.loads(message.decode())
             print(decoded_msg)
             print("\n")
@@ -173,7 +175,9 @@ def send_server(message):
                 if curr_cmd == COMMANDS[4]:
                     # /msg
                     msg_dict = json.loads(msg)
-                    gui.post("[To {handle}]: {msg}".format(handle=msg_dict['handle'], msg=msg_dict['message']), 'msg')
+                    
+                    global sending_msg
+                    sending_msg = "[To {handle}]: {msg}".format(handle=msg_dict['handle'], msg=msg_dict['message']);
 
             except Exception as e:
                 print("Timeout raised and caught.")
@@ -215,8 +219,12 @@ def get_error(code):
         return error+"Command parameters do not match or is not allowed."
 
 
-def get_host() -> str: return udp_host
-def get_port() -> int: return udp_port
+def get_host() -> str: 
+    global udp_host
+    return udp_host
+def get_port() -> int: 
+    global udp_port
+    return udp_port
 
 def set_host(host): udp_host = host
 def set_port(port): udp_port = port
@@ -231,10 +239,11 @@ def receiver():
     global curr_cmd
     global gui
 
+    global sending_msg
     global connected
     while True:
-        if connected:
-            try:
+        try:
+            if connected:
                 message, _ = UDPClientSocket.recvfrom(BUFFER_SIZE)
                 print("RECEIVED SERVER")
                 decoded_msg = json.loads(message.decode())
@@ -254,18 +263,21 @@ def receiver():
                 elif decoded_msg['command'] == COMMANDS[3]:
                     gui.post(decoded_msg['message'], 'all')
                 elif decoded_msg['command'] == COMMANDS[4]:
+                    if sending_msg != None:
+                        gui.post(sending_msg, 'msg')
+                        sending_msg = None
                     rcv_msg = "[From {handle}]: {message}".format(handle=str(decoded_msg['handle']), message=str(decoded_msg['message']))
                     gui.post(rcv_msg, 'msg')
                 
-                if decoded_msg['command'] == COMMANDS[6]:
+                elif decoded_msg['command'] == COMMANDS[6]:
+                    print("Error received from server!")
                     gui.post(decoded_msg['message'], 'error')
-                    pass
-            
-            except Exception as e:
-                # This will spam if you print exceptions.
-                if e != WindowsError.winerror:
-                    pass
-                    #print(e)
+                                
+        except Exception as e:
+            # This will spam if you print exceptions.
+            if e != WindowsError.winerror:
+                pass
+                #print(e)
                 
 
 # Separate thread for receiving from server
