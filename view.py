@@ -3,7 +3,7 @@ import tkinter as tk
 import client as client_app
 
 BG_GRAY = "#ABB2B9"
-BG_COLOR = "#3E2C41"
+BG_COLOR = "#261C2C"
 TEXT_COLOR = "#EAECEE"
 
 DARK_CLR = "#140E18"
@@ -19,6 +19,8 @@ SEND_BTN = "Arial 16 bold"
 
 MSG_CMD = "#3E2C41"
 ALL_CMD = DARK_CLR
+
+handle = None
 
 class GUI:
 
@@ -36,7 +38,7 @@ class GUI:
 
 
         def send():
-            self.text_board.configure(state="normal")
+            # self.text_board.configure(state="normal")
             """
                 Sends to client the written text inside entry for it to send to server.
             """
@@ -63,8 +65,9 @@ class GUI:
         self.text_board.place(x=0, y=90, width=500.0, height=456.0)
         self.text_board.tag_config("error", foreground="#F13030")
         self.text_board.tag_config("success", foreground="#30F189")
+        self.text_board.tag_config("you", foreground="#EECD58", font=FONT_BOLD)
+        self.text_board.tag_config("else", font=FONT_BOLD)
         self.text_board.config(spacing3=10)
-        self.text_board.configure(state="disabled")
 
         scrollbar = tk.Scrollbar(self.text_board)
         scrollbar.place(relheight=1, relx=0.974)
@@ -124,18 +127,41 @@ class GUI:
         print('RECEIVED CLIENT MSG')
         self.curr_msg = message
         print(self.curr_msg)
-        print("\n")
-
+        print(cmd)
+        global handle
 
         if (cmd == "msg" or cmd == "all"):
-            self.text_board.insert(tk.END, "\n" + message)
+            msg_list = self.edit_text(message)
+
+            if (cmd == "all"):
+                print(handle)
+                print(msg_list[0])
+                if (handle == msg_list[0]):
+                    self.text_board.insert(tk.END, "\n" + msg_list[0] + ": ", 'you')
+                else:
+                    self.text_board.insert(tk.END, "\n" + msg_list[0] + ": ", 'else')
+            else:
+                print("HERE")
+                if("To" in msg_list[0]):
+                    print("CONTAINS")
+                    name = msg_list[0].split("To ")
+                    # if (handle == name[1]):
+                    self.text_board.insert(tk.END, "\n" + msg_list[0] + ": ", 'you')
+                else:
+                    self.text_board.insert(tk.END, "\n" + msg_list[0] + ": ", 'else')
+
+            self.text_board.insert(tk.END, msg_list[1])
+
         else:
             if (cmd== "error"):
                 self.text_board.insert(tk.END, "\n" + message, 'error')
-            else:
-                self.text_board.insert(tk.END, "\n" + message, 'success')
 
-        self.text_board.configure(state="disabled")
+            else:
+                if (cmd == "register"):
+                    split = message.split("Welcome ")
+                    name = split[1]
+                    handle = name[:-1]
+                self.text_board.insert(tk.END, "\n" + message, 'success')
 
     def edit_text (self, message):
         if (message[0] == "["):
