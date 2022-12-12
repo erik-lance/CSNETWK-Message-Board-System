@@ -160,6 +160,7 @@ def send_server(message):
     global curr_cmd
     global gui
 
+    global sending_msg
     if err == None:
         serverAddressPort = (udp_host, udp_port)
         bytesToSend = str.encode(msg)
@@ -176,11 +177,13 @@ def send_server(message):
 
                 UDPClientSocket.settimeout(None)
                 if curr_cmd == COMMANDS[4]:
+                    print('I am sending out a message.')
                     # /msg
                     msg_dict = json.loads(msg)
                     
-                    global sending_msg
+                    
                     sending_msg = "[To {handle}]: {msg}".format(handle=msg_dict['handle'], msg=msg_dict['message']);
+                    print(sending_msg)
 
             except Exception as e:
                 print("Timeout raised and caught.")
@@ -211,7 +214,7 @@ def get_error(code):
     if code == 1:
         global udp_host
         global udp_port
-        return error+"Error: Already connected to {host}:{port}".format(host=udp_host, port=udp_port)
+        return error+"Already connected to {host}:{port}".format(host=udp_host, port=udp_port)
     elif code == 2:
         return error+"Disconnection failed. Please connect to the server first."
     elif code == 3:
@@ -220,7 +223,7 @@ def get_error(code):
         return error+"Command not found."
     elif code == 5:
         return error+"Command parameters do not match or is not allowed."
-    elif code == 5:
+    elif code == 6:
         return error+"You already have a registered handle."
 
 def get_handle() -> str:
@@ -278,8 +281,9 @@ def receiver():
                     if sending_msg != None:
                         gui.post(sending_msg, 'msg')
                         sending_msg = None
-                    rcv_msg = "[From {handle}]: {message}".format(handle=str(decoded_msg['handle']), message=str(decoded_msg['message']))
-                    gui.post(rcv_msg, 'msg')
+                    if decoded_msg['handle'] != cur_handle:
+                        rcv_msg = "[From {handle}]: {message}".format(handle=str(decoded_msg['handle']), message=str(decoded_msg['message']))
+                        gui.post(rcv_msg, 'msg')
                 
                 elif decoded_msg['command'] == COMMANDS[6]:
                     print("Error received from server!")
