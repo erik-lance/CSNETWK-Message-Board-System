@@ -129,8 +129,8 @@ def parse_system_cmd():
 
                         # The handled message now contains the handle to broadcast
                         bytesToSend = str.encode(ret_msg)
-                        for client in clients:
-                            UDPServerSocket.sendto(bytesToSend, client)
+                        for client in users:
+                            UDPServerSocket.sendto(bytesToSend, client[0])
                     else:
                         ret_msg['command'] = 'error'
                         ret_msg['message'] = 'Error: You need to register a handle first.'

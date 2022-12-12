@@ -66,7 +66,7 @@ def parse_message(message):
         msg_dict['command'] = 'leave'
         curr_cmd = COMMANDS[1]
 
-    elif msg[0] == COMMANDS[2] and len(msg) == 2 and udp_host != None:
+    elif msg[0] == COMMANDS[2] and len(msg) == 2 and udp_host != None and cur_handle == None:
         # /register <handle>
         msg_dict['command'] = 'register'
         msg_dict['handle'] = msg[1]
@@ -96,6 +96,8 @@ def parse_message(message):
         err = get_error(2)
     elif msg[0] in COMMANDS[2:] and udp_host == None:
         err = get_error(3)
+    elif msg[0] == COMMANDS[2] and cur_handle != None:
+        err = get_error(6)
     else:
         err = get_error(5)
 
@@ -218,6 +220,8 @@ def get_error(code):
         return error+"Command not found."
     elif code == 5:
         return error+"Command parameters do not match or is not allowed."
+    elif code == 5:
+        return error+"You already have a registered handle."
 
 def get_handle() -> str:
     global cur_handle
@@ -244,6 +248,7 @@ def receiver():
     global gui
 
     global sending_msg
+    global cur_handle
     global connected
     while True:
         try:
@@ -258,12 +263,13 @@ def receiver():
                     udp_host = None
                     udp_port = None
                     gui.post(LEAVE_MSG, 'leave')
+                    cur_handle = None
                     connected = False
 
                 elif decoded_msg['command'] == COMMANDS[2] and curr_cmd == COMMANDS[2]:
                     handle_msg = "Welcome "+str(decoded_msg['handle'])+"!"
                     gui.post(handle_msg, 'register')
-                    global cur_handle
+                    
                     cur_handle = decoded_msg['handle']
                 # If command is ALL / MSG / ? / error
                 elif decoded_msg['command'] == COMMANDS[3]:
