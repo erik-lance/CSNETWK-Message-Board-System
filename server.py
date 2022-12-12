@@ -156,6 +156,17 @@ def parse_system_cmd():
                         if dest_address != None:
                             bytesToSend = str.encode(ret_msg)
                             UDPServerSocket.sendto(bytesToSend, dest_address)
+
+                            # Return message to client as well to confirm it was sent.
+                            ret_msg = json.loads(ret_msg)
+                            ret_msg['command'] = 'msg'
+                            ret_msg['handle'] = user_handle
+
+                            ret_msg = json.dumps(ret_msg)
+
+                            # Returns message to client.
+                            bytesToSend = str.encode(ret_msg)
+                            UDPServerSocket.sendto(bytesToSend, address)
                         else:
                             ret_msg = json.loads(ret_msg)
                             ret_msg['command'] = 'error'
