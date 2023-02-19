@@ -1,0 +1,9 @@
+In the event the exe files don't work for your platform or are simply too slow, you can
+run the files through console instead.
+
+To run server:
+python server.py
+
+To run client:
+python view.py
+
